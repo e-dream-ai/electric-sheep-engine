@@ -1,0 +1,3 @@
+[submodule "python-api"]
+	path = python-api
+	url = git@github.com:e-dream-ai/python-api.git
