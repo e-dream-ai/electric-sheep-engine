@@ -2,6 +2,7 @@ import sys
 import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
+#from edream_sdk.models.playlist_types import PlaylistItemType
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
@@ -30,20 +31,30 @@ def assure_keyframe(id):
     print(k)
     return k.uuid
 
+# first clear all the keyframes on this playlist
+print('\ndeleting')
+for k in playlist.playlistKeyframes:
+    print(k)
+    print(edream_client.delete_keyframe(k.keyframe.uuid))
+
+# then add new ones based on the names of the dreams/sheep
+print('\nadding')
 for i in playlist.items:
-    print(i.dreamItem.name)
-    # parse it according to the sheep naming system:
-    # https://github.com/scottdraves/electricsheep/wiki/Protocol
-    parts = i.dreamItem.name.split('=')
-    if len(parts) == 4:
-        gen = parts[0]
-        id = f"{gen}={parts[1]}"
-        start_id = f"{gen}={parts[2]}"
-        end_id = f"{gen}={parts[3]}"
-        print(f"  id: {id}")
-        print(f"  start_id: {start_id}")
-        print(f"  end_id: {end_id}")
-        start_keyframe = assure_keyframe(start_id)
-        end_keyframe = assure_keyframe(end_id)
-    else:
-        print(f"parse error on {i.dreamItem.name}")
+    if i.type == 'dream': # why not PlaylistItemType.DREAM instead
+        d = i.dreamItem
+        print(d.name)
+        # parse it according to the sheep naming system:
+        # https://github.com/scottdraves/electricsheep/wiki/Protocol
+        parts = d.name.split('=')
+        if len(parts) == 4:
+            gen = parts[0]
+            id = f"{gen}={parts[1]}"
+            start_id = f"{gen}={parts[2]}"
+            end_id = f"{gen}={parts[3]}"
+            print(f"  id: {id}")
+            print(f"  start_id: {start_id}")
+            print(f"  end_id: {end_id}")
+            start_keyframe = assure_keyframe(start_id)
+            end_keyframe = assure_keyframe(end_id)
+        else:
+            print(f"parse error on {d.name}")
