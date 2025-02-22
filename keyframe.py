@@ -2,7 +2,7 @@ import sys
 import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
-#from edream_sdk.models.playlist_types import PlaylistItemType
+from edream_sdk.models.dream_types import UpdateDreamRequest
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
@@ -56,5 +56,9 @@ for i in playlist.items:
             print(f"  end_id: {end_id}")
             start_keyframe = assure_keyframe(start_id)
             end_keyframe = assure_keyframe(end_id)
+            edream_client.update_dream(
+                d.uuid,
+                request_data=UpdateDreamRequest(startKeyframe=start_keyframe,
+                                                endKeyframe=end_keyframe))
         else:
             print(f"parse error on {d.name}")
