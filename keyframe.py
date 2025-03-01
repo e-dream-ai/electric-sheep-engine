@@ -28,14 +28,14 @@ def assure_keyframe(id):
     k = edream_client.add_keyframe_to_playlist(playlist, id)
     return k.uuid
 
-# first clear all the keyframes on this playlist
-print('\ndeleting')
-for k in playlist.playlistKeyframes:
-    print(k.keyframe.name)
-    edream_client.delete_keyframe(k.keyframe.uuid)
-
-# fetch it again
-playlist = edream_client.get_playlist(PLAYLIST_UUID)
+if False:
+    # first clear all the keyframes on this playlist
+    print('\ndeleting')
+    for k in playlist.playlistKeyframes:
+        print(k.keyframe.name)
+        edream_client.delete_keyframe(k.keyframe.uuid)
+    # fetch it again
+    playlist = edream_client.get_playlist(PLAYLIST_UUID)
 
 # then add new ones based on the names of the dreams/sheep
 print('\nadding')
