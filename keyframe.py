@@ -56,6 +56,9 @@ for i in playlist.items:
             print(f"  end_id: {end_id}")
             start_keyframe = assure_keyframe(start_id)
             end_keyframe = assure_keyframe(end_id)
+            if d.startKeyframe and d.startKeyframe.uuid == start_keyframe and d.endKeyframe and d.endKeyframe.uuid == end_keyframe:
+                print('skipping')
+                continue
             edream_client.update_dream(
                 d.uuid,
                 request_data=UpdateDreamRequest(startKeyframe=start_keyframe,
