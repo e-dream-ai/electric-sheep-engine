@@ -2,7 +2,6 @@ import sys
 import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
-from edream_sdk.models.dream_types import UpdateDreamRequest
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
@@ -22,30 +21,32 @@ playlist = edream_client.get_playlist(PLAYLIST_UUID)
 # going to just search the keyframes in this playlist sequentially
 # which is horrible but should work.
 def assure_keyframe(id):
-    for k in playlist.playlistKeyframes:
-        if k.keyframe.name == id:
-            return k.keyframe.uuid
+    print('assure_keyframe ' + id)
+    for k in playlist['playlistKeyframes']:
+        if k['keyframe']['name'] == id:
+            return k['keyframe']['uuid']
+    print('making')
     k = edream_client.add_keyframe_to_playlist(playlist, id)
-    return k.uuid
+    return k['uuid']
 
-if False:
+if True:
     # first clear all the keyframes on this playlist
     print('\ndeleting')
-    for k in playlist.playlistKeyframes:
-        print(k.keyframe.name)
-        edream_client.delete_keyframe(k.keyframe.uuid)
+    for k in playlist['playlistKeyframes']:
+        print(k['keyframe']['name'])
+        edream_client.delete_keyframe(k['keyframe']['uuid'])
     # fetch it again
     playlist = edream_client.get_playlist(PLAYLIST_UUID)
 
 # then add new ones based on the names of the dreams/sheep
-print('\nadding')
-for i in playlist.items:
-    if i.type == 'dream': # why not PlaylistItemType.DREAM instead
-        d = i.dreamItem
-        print(d.name)
+print('adding keyframes')
+for i in playlist['items']:
+    if i['type'] == 'dream': # why not PlaylistItemType.DREAM instead
+        d = i['dreamItem']
+        print(d['name'])
         # parse it according to the sheep naming system:
         # https://github.com/scottdraves/electricsheep/wiki/Protocol
-        parts = d.name.split('=')
+        parts = d['name'].split('=')
         if len(parts) == 4:
             gen = parts[0]
             id = f"{gen}={parts[1]}"
@@ -56,12 +57,12 @@ for i in playlist.items:
             print(f"  end_id: {end_id}")
             start_keyframe = assure_keyframe(start_id)
             end_keyframe = assure_keyframe(end_id)
-            if d.startKeyframe and d.startKeyframe.uuid == start_keyframe and d.endKeyframe and d.endKeyframe.uuid == end_keyframe:
+            if d['startKeyframe'] and d['startKeyframe']['uuid'] == start_keyframe and d['endKeyframe'] and d['endKeyframe']['uuid'] == end_keyframe:
                 print('skipping')
                 continue
-            edream_client.update_dream(
-                d.uuid,
-                request_data=UpdateDreamRequest(startKeyframe=start_keyframe,
-                                                endKeyframe=end_keyframe))
+#            edream_client.update_dream(
+#                d.uuid,
+#                request_data=UpdateDreamRequest(startKeyframe=start_keyframe,
+#                                                endKeyframe=end_keyframe))
         else:
             print(f"parse error on {d.name}")

@@ -2,6 +2,7 @@ import sys
 import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
+from pprint import pprint
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
@@ -14,16 +15,16 @@ edream_client = create_edream_client(backend_url=BACKEND_URL, api_key=API_KEY)
 
 playlist = edream_client.get_playlist(PLAYLIST_UUID)
 
+
 def already_uploaded(filename):
     name, _ = os.path.splitext(filename)
-    for i in playlist.items:
-        if i.dreamItem.name == name:
+    for i in playlist['items']:
+        if i['dreamItem']['name'] == name:
             return True
     return False
 
 for filename in os.listdir(directory):
     f = os.path.join(directory, filename)
-    print(f)
     if not already_uploaded(filename):
-        print('upload')
+        print('upload' + f)
         edream_client.add_file_to_playlist(uuid=PLAYLIST_UUID, file_path=f)
