@@ -2,6 +2,7 @@ import sys
 import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
+from edream_sdk.types.dream_types import UpdateDreamRequest
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
@@ -9,6 +10,13 @@ API_KEY = os.getenv("API_KEY")
 PLAYLIST_UUID = os.getenv("PLAYLIST_UUID")
 
 edream_client = create_edream_client(backend_url=BACKEND_URL, api_key=API_KEY)
+
+
+#edream_client.add_keyframe_to_playlist(
+#    playlist_uuid="14bdc320-2c06-41e4-8a90-639385c491d9",
+#    keyframe_uuid="9d62ceec-e120-4c15-9e27-26a829f3c30b",
+#)
+#exit(1)
 
 playlist = edream_client.get_playlist(PLAYLIST_UUID)
 
@@ -21,11 +29,9 @@ playlist = edream_client.get_playlist(PLAYLIST_UUID)
 # going to just search the keyframes in this playlist sequentially
 # which is horrible but should work.
 def assure_keyframe(id):
-    print('assure_keyframe ' + id)
     for k in playlist['playlistKeyframes']:
         if k['keyframe']['name'] == id:
             return k['keyframe']['uuid']
-    print('making')
     k = edream_client.add_keyframe_to_playlist(playlist, id)
     return k['uuid']
 
@@ -60,9 +66,9 @@ for i in playlist['items']:
             if d['startKeyframe'] and d['startKeyframe']['uuid'] == start_keyframe and d['endKeyframe'] and d['endKeyframe']['uuid'] == end_keyframe:
                 print('skipping')
                 continue
-#            edream_client.update_dream(
-#                d.uuid,
-#                request_data=UpdateDreamRequest(startKeyframe=start_keyframe,
-#                                                endKeyframe=end_keyframe))
+            edream_client.update_dream(
+                d['uuid'],
+                UpdateDreamRequest(startKeyframe=start_keyframe,
+                                   endKeyframe=end_keyframe))
         else:
-            print(f"parse error on {d.name}")
+            print(f"parse error on {d['name']}")

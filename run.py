@@ -2,7 +2,6 @@ import sys
 import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
-from pprint import pprint
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
