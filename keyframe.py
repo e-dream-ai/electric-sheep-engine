@@ -35,7 +35,7 @@ def assure_keyframe(id):
     k = edream_client.add_keyframe_to_playlist(playlist, id)
     return k['uuid']
 
-if True:
+if False:
     # first clear all the keyframes on this playlist
     print('\ndeleting')
     for k in playlist['playlistKeyframes']:

@@ -25,5 +25,5 @@ def already_uploaded(filename):
 for filename in os.listdir(directory):
     f = os.path.join(directory, filename)
     if not already_uploaded(filename):
-        print('upload' + f)
+        print('upload ' + f)
         edream_client.add_file_to_playlist(uuid=PLAYLIST_UUID, file_path=f)
