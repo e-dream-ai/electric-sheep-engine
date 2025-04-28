@@ -3,11 +3,19 @@ import os
 from dotenv import load_dotenv
 from edream_sdk.client import create_edream_client
 from edream_sdk.types.dream_types import UpdateDreamRequest
+import argparse
+import pprint
 
 load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
 API_KEY = os.getenv("API_KEY")
 PLAYLIST_UUID = os.getenv("PLAYLIST_UUID")
+
+parser = argparse.ArgumentParser(prog='keyframe')
+parser.add_argument('--playlist_uuid', default=PLAYLIST_UUID)
+
+args = vars(parser.parse_args())
+PLAYLIST_UUID = args['playlist_uuid']
 
 edream_client = create_edream_client(backend_url=BACKEND_URL, api_key=API_KEY)
 
