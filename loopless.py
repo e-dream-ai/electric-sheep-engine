@@ -49,6 +49,7 @@ for i in playlist['items']:
                 print('skipping loop')
                 continue
             print('add it ' + d['uuid'])
+            # should first check if it exists
             edream_client.add_item_to_playlist(playlist_uuid=LOOPLESS_PLAYLIST_UUID,
                                                type=PlaylistItemType.DREAM,
                                                item_uuid=d['uuid'])
