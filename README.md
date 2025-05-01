@@ -6,14 +6,4 @@ renderer.
 
 #### install edream sdk
 
-Fetch submodule with init
-
-```bash
-git submodule init
-```
-
-Update (every time that is needed)
-
-```bash
-git submodule update --remote
-```
+pip install -r requirements.txt
