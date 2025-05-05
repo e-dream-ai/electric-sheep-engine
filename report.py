@@ -28,7 +28,6 @@ preds = {}
 for i in playlist['items']:
     if i['type'] == 'dream': # why not PlaylistItemType.DREAM instead
         d = i['dreamItem']
-        print(d['name'])
         # parse it according to the sheep naming system:
         # https://github.com/scottdraves/electricsheep/wiki/Protocol
         parts = d['name'].split('=')
@@ -48,3 +47,12 @@ for i in playlist['items']:
         else:
             print(f"parse error on {d['name']}")
 
+def compare_keyframes(item):
+    return len(succs[item]) - len(preds[item])
+
+io_balance = list(succs.keys())
+
+io_balance.sort(key=compare_keyframes)
+
+for i in io_balance:
+    print(f"{i} {len(succs[i])} {len(preds[i])}")
