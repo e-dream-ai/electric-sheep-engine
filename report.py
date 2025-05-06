@@ -47,12 +47,25 @@ for i in playlist['items']:
         else:
             print(f"parse error on {d['name']}")
 
+print()
+print("io balance ranking")
+
 def compare_keyframes(item):
     return len(succs[item]) - len(preds[item])
 
 io_balance = list(succs.keys())
-
 io_balance.sort(key=compare_keyframes)
-
 for i in io_balance:
+    print(f"{i} {len(succs[i])} {len(preds[i])}")
+
+singularities = []
+for i in succs.keys():
+    if i in succs[i]:
+        continue
+    singularities.append(i)
+
+print()
+print("singularity ranking")
+singularities.sort(key=compare_keyframes)
+for i in singularities:
     print(f"{i} {len(succs[i])} {len(preds[i])}")
