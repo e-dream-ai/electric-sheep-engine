@@ -50,13 +50,16 @@ for i in playlist['items']:
 print()
 print("io balance ranking")
 
+def count(d, i):
+    return len(d.get(i, []))
+
 def compare_keyframes(item):
-    return len(succs[item]) - len(preds[item])
+    return count(succs, item) - count(preds, item)
 
 io_balance = list(succs.keys())
 io_balance.sort(key=compare_keyframes)
 for i in io_balance:
-    print(f"{i} {len(succs[i])} {len(preds[i])}")
+    print(f"{i} {count(succs, i)} {count(preds, i)}")
 
 singularities = []
 for i in succs.keys():
@@ -68,4 +71,4 @@ print()
 print("singularity ranking")
 singularities.sort(key=compare_keyframes)
 for i in singularities:
-    print(f"{i} {len(succs[i])} {len(preds[i])}")
+    print(f"{i} {count(succs, i)} {count(preds, i)}")
