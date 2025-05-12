@@ -21,31 +21,33 @@ edream_client = create_edream_client(backend_url=BACKEND_URL, api_key=API_KEY)
 
 playlist = edream_client.get_playlist(PLAYLIST_UUID)
 
-succs = {}
-preds = {}
+def compute_graph(playlist):
+    succs = {}
+    preds = {}
+    for i in playlist['items']:
+        if i['type'] == 'dream': # why not PlaylistItemType.DREAM instead
+            d = i['dreamItem']
+            # parse it according to the sheep naming system:
+            # https://github.com/scottdraves/electricsheep/wiki/Protocol
+            parts = d['name'].split('=')
+            if len(parts) == 4:
+                gen = parts[0]
+                id = f"{gen}={parts[1]}"
+                start_id = f"{gen}={parts[2]}"
+                end_id = f"{gen}={parts[3]}"
+                s = succs.get(start_id, [])
+                if end_id in s:
+                    print('duplicate succ ' + end_id)
+                succs[start_id] = s + [end_id]
+                p = preds.get(end_id, [])
+                if start_id in p:
+                    print('duplicate pred ' + start_id)
+                preds[end_id] = p + [start_id]
+            else:
+                print(f"parse error on {d['name']}")
+    return succs, preds
 
-
-for i in playlist['items']:
-    if i['type'] == 'dream': # why not PlaylistItemType.DREAM instead
-        d = i['dreamItem']
-        # parse it according to the sheep naming system:
-        # https://github.com/scottdraves/electricsheep/wiki/Protocol
-        parts = d['name'].split('=')
-        if len(parts) == 4:
-            gen = parts[0]
-            id = f"{gen}={parts[1]}"
-            start_id = f"{gen}={parts[2]}"
-            end_id = f"{gen}={parts[3]}"
-            s = succs.get(start_id, [])
-            if end_id in s:
-                print('duplicate succ ' + end_id)
-            succs[start_id] = s + [end_id]
-            p = preds.get(end_id, [])
-            if start_id in p:
-                print('duplicate pred ' + start_id)
-            preds[end_id] = p + [start_id]
-        else:
-            print(f"parse error on {d['name']}")
+succs, preds = compute_graph(playlist)
 
 print()
 print("io balance ranking")
@@ -61,9 +63,14 @@ io_balance.sort(key=compare_keyframes)
 for i in io_balance:
     print(f"{i} {count(succs, i)} {count(preds, i)}")
 
+
+# this only works on the main playlist, we hae to compute succs with a different source
+main_playlist = edream_client.get_playlist(os.getenv("PLAYLIST_UUID"))
+main_succs, _ = compute_graph(main_playlist)
+
 singularities = []
-for i in succs.keys():
-    if i in succs[i]:
+for i in main_succs.keys():
+    if i in main_succs[i]:
         continue
     singularities.append(i)
 
