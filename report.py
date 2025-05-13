@@ -45,9 +45,10 @@ def compute_graph(playlist):
                 preds[end_id] = p + [start_id]
             else:
                 print(f"parse error on {d['name']}")
-    return succs, preds
+    keys = list(set(succs.keys()).union(list(preds.keys())))
+    return keys, succs, preds
 
-succs, preds = compute_graph(playlist)
+io_balance, succs, preds = compute_graph(playlist)
 
 print()
 print("io balance ranking")
@@ -58,7 +59,6 @@ def count(d, i):
 def compare_keyframes(item):
     return count(succs, item) - count(preds, item)
 
-io_balance = list(set(succs.keys()).union(list(preds.keys())))
 io_balance.sort(key=compare_keyframes)
 for i in io_balance:
     print(f"{i} {count(succs, i)} {count(preds, i)}")
@@ -66,10 +66,10 @@ for i in io_balance:
 
 # this only works on the main playlist, we hae to compute succs with a different source
 main_playlist = edream_client.get_playlist(os.getenv("PLAYLIST_UUID"))
-main_succs, _ = compute_graph(main_playlist)
+main_keys, main_succs, _ = compute_graph(main_playlist)
 
 singularities = []
-for i in main_succs.keys():
+for i in main_keys:
     if i in main_succs[i]:
         continue
     singularities.append(i)
