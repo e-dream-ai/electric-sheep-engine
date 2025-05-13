@@ -58,7 +58,7 @@ def count(d, i):
 def compare_keyframes(item):
     return count(succs, item) - count(preds, item)
 
-io_balance = list(succs.keys())
+io_balance = list(set(succs.keys()).union(list(preds.keys())))
 io_balance.sort(key=compare_keyframes)
 for i in io_balance:
     print(f"{i} {count(succs, i)} {count(preds, i)}")
