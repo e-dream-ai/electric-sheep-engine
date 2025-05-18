@@ -13,9 +13,13 @@ PLAYLIST_UUID = os.getenv("PLAYLIST_UUID")
 
 parser = argparse.ArgumentParser(prog='keyframe')
 parser.add_argument('--playlist_uuid', default=PLAYLIST_UUID)
+parser.add_argument('--edges', default=0, type=int)
+parser.add_argument('--weight', default=0, type=int)
 
 args = vars(parser.parse_args())
 PLAYLIST_UUID = args['playlist_uuid']
+n_edges = args['edges']
+by_weight = args['weight']
 
 edream_client = create_edream_client(backend_url=BACKEND_URL, api_key=API_KEY)
 
@@ -59,6 +63,9 @@ def count(d, i):
 def compare_keyframes(item):
     return count(succs, item) - count(preds, item)
 
+def compare_by_weight(item):
+    return count(succs, item) + count(preds, item)
+
 io_balance.sort(key=compare_keyframes)
 for i in io_balance:
     print(f"{i} {count(succs, i)} {count(preds, i)}")
@@ -79,3 +86,28 @@ print("singularity ranking")
 singularities.sort(key=compare_keyframes)
 for i in singularities:
     print(f"{i} {count(succs, i)} {count(preds, i)}")
+
+def set_url(begin, key):
+    _,i = key.split('=')
+    name = 'beginid' if begin else 'endid'
+    return f"http://v3d0.sheepserver.net/cgi/set?name={name}&value={i}"
+
+if n_edges > 0:
+    name = 'weight' if by_weight else 'balance'
+    print()
+    print(f'edges recommended for {name}')
+    print()
+
+if by_weight:
+    io_balance.sort(key=compare_by_weight)
+    for i in range(n_edges):
+        print(set_url(True, io_balance[2*i]))
+        print(set_url(False, io_balance[2*i+1]))
+        print()
+else:
+    for i in range(n_edges):
+        print(set_url(True, io_balance[i]))
+        print(set_url(False, io_balance[-i-1]))
+        print()
+
+
