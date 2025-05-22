@@ -68,7 +68,7 @@ def compare_by_weight(item):
 
 io_balance.sort(key=compare_keyframes)
 for i in io_balance:
-    print(f"{i} {count(succs, i)} {count(preds, i)}")
+    print(f"{i} {count(preds, i)} {count(succs, i)}")
 
 
 # this only works on the main playlist, we hae to compute succs with a different source
@@ -85,7 +85,7 @@ print()
 print("singularity ranking")
 singularities.sort(key=compare_keyframes)
 for i in singularities:
-    print(f"{i} {count(succs, i)} {count(preds, i)}")
+    print(f"{i} {count(preds, i)} {count(succs, i)}")
 
 def set_url(begin, key):
     _,i = key.split('=')
