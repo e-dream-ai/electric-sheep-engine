@@ -14,7 +14,7 @@ PLAYLIST_UUID = os.getenv("PLAYLIST_UUID")
 parser = argparse.ArgumentParser(prog='keyframe')
 parser.add_argument('--playlist_uuid', default=PLAYLIST_UUID)
 parser.add_argument('--edges', default=0, type=int)
-parser.add_argument('--weight', default=0, type=int)
+parser.add_argument('--weight', action='store_true', help='Select edges by weight instead of balance')
 
 args = vars(parser.parse_args())
 PLAYLIST_UUID = args['playlist_uuid']
