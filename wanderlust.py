@@ -87,7 +87,7 @@ def add_item(dream_uuid):
 if to_delete:
     print(f"\nDeleting {len(to_delete)} items in parallel...")
     delete_start = time.time()
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         delete_futures = {
             executor.submit(delete_item, item_id, uuid, name): (item_id, uuid, name)
             for item_id, uuid, name in to_delete
@@ -109,7 +109,7 @@ if to_delete:
 if to_add:
     print(f"\nAdding {len(to_add)} items in parallel...")
     add_start = time.time()
-    with ThreadPoolExecutor(max_workers=20) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:
         add_futures = {
             executor.submit(add_item, uuid): uuid
             for uuid in to_add
