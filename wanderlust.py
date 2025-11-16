@@ -21,8 +21,9 @@ loopless_playlist = edream_client.get_playlist(LOOPLESS_PLAYLIST_UUID)
 print(f"Fetched playlists in {time.time() - start_time:.2f}s")
 
 print("\nParsing source playlist...")
+target_dream_uuids_ordered = []
 target_dream_uuids = set()
-for i in playlist['items']:
+for order_index, i in enumerate(playlist['items']):
     if i['type'] == 'dream':
         d = i['dreamItem']
         # parse it according to the sheep naming system:
@@ -37,6 +38,7 @@ for i in playlist['items']:
                 print(f"  Skipping loop: {d['name']}")
                 continue
             target_dream_uuids.add(d['uuid'])
+            target_dream_uuids_ordered.append((order_index, d['uuid']))
             print(f"  Will include: {d['name']} ({d['uuid']})")
         else:
             print(f"  Parse error on {d['name']}")
@@ -51,7 +53,8 @@ for i in loopless_playlist['items']:
 
 to_delete = [(item_id, uuid, name) for item_id, uuid, name in current_items_to_delete 
               if uuid not in target_dream_uuids]
-to_add = [uuid for uuid in target_dream_uuids if uuid not in current_dream_uuids]
+to_add = [(order_index, uuid) for order_index, uuid in target_dream_uuids_ordered 
+          if uuid not in current_dream_uuids]
 
 print(f"\nSummary:")
 print(f"  Current items in loopless playlist: {len(current_dream_uuids)}")
@@ -73,16 +76,16 @@ def delete_item(item_id, uuid, name):
     except Exception as e:
         return (False, uuid, name, str(e))
 
-def add_item(dream_uuid):
+def add_item(order_index, dream_uuid):
     try:
-        edream_client.add_item_to_playlist(
+        playlist_item = edream_client.add_item_to_playlist(
             playlist_uuid=LOOPLESS_PLAYLIST_UUID,
             type=PlaylistItemType.DREAM,
             item_uuid=dream_uuid
         )
-        return (True, dream_uuid, None)
+        return (True, order_index, dream_uuid, playlist_item['id'], None)
     except Exception as e:
-        return (False, dream_uuid, str(e))
+        return (False, order_index, dream_uuid, None, str(e))
 
 if to_delete:
     print(f"\nDeleting {len(to_delete)} items in parallel...")
@@ -109,16 +112,23 @@ if to_delete:
 if to_add:
     print(f"\nAdding {len(to_add)} items in parallel...")
     add_start = time.time()
+    
     with ThreadPoolExecutor(max_workers=10) as executor:
         add_futures = {
-            executor.submit(add_item, uuid): uuid
-            for uuid in to_add
+            executor.submit(add_item, order_index, uuid): (order_index, uuid)
+            for order_index, uuid in to_add
         }
         
         add_success = 0
         add_failed = 0
         for future in as_completed(add_futures):
-            success, uuid, error = future.result()
+            result = future.result()
+            success = result[0]
+            order_index = result[1]
+            uuid = result[2]
+            item_id = result[3]
+            error = result[4]
+            
             if success:
                 add_success += 1
                 print(f"  Added: {uuid}")
@@ -127,6 +137,32 @@ if to_add:
                 print(f"  Failed to add {uuid}: {error}")
     
     print(f"Added {add_success} items, {add_failed} failed in {time.time() - add_start:.2f}s")
+    
+    if len(to_add) > 0 or len(to_delete) > 0:
+        print(f"\nReordering items to match source playlist order...")
+        reorder_start = time.time()
+        
+        loopless_playlist_updated = edream_client.get_playlist(LOOPLESS_PLAYLIST_UUID)
+        
+        uuid_to_item_id = {}
+        for item in loopless_playlist_updated['items']:
+            if item['type'] == 'dream' and item['dreamItem']:
+                uuid_to_item_id[item['dreamItem']['uuid']] = item['id']
+        
+        target_uuids_ordered = [uuid for _, uuid in target_dream_uuids_ordered]
+        
+        reorder_list = []
+        for new_order, uuid in enumerate(target_uuids_ordered):
+            if uuid in uuid_to_item_id:
+                item_id = uuid_to_item_id[uuid]
+                reorder_list.append({"id": item_id, "order": new_order})
+        
+        if reorder_list:
+            edream_client.reorder_playlist(
+                uuid=LOOPLESS_PLAYLIST_UUID,
+                order=reorder_list
+            )
+            print(f"Reordered {len(reorder_list)} items in {time.time() - reorder_start:.2f}s")
 
 total_time = time.time() - start_time
 print(f"\nComplete! Total time: {total_time:.2f}s")
