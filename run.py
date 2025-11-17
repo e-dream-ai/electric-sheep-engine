@@ -22,8 +22,19 @@ def already_uploaded(filename):
             return True
     return False
 
+
+def progress_handler(percentage: float) -> None:
+    print(f"Upload progress: {percentage:.2f}%")
+
+
 for filename in os.listdir(directory):
     f = os.path.join(directory, filename)
     if not already_uploaded(filename):
         print('upload ' + f)
-        edream_client.add_file_to_playlist(uuid=PLAYLIST_UUID, file_path=f)
+        edream_client.add_file_to_playlist(
+            uuid=PLAYLIST_UUID, 
+            file_path=f,
+            progress_callback=progress_handler,
+            progress_interval=1.0
+        )
+        print("Upload completed.")
