@@ -63,8 +63,7 @@ print(f"  Items to delete: {len(to_delete)}")
 print(f"  Items to add: {len(to_add)}")
 
 if len(to_delete) == 0 and len(to_add) == 0:
-    print("\nPlaylists are already in sync! No changes needed.")
-    sys.exit(0)
+    print("\nItems are in sync, checking order...")
 
 def delete_item(item_id, uuid, name):
     try:
@@ -137,32 +136,40 @@ if to_add:
                 print(f"  Failed to add {uuid}: {error}")
     
     print(f"Added {add_success} items, {add_failed} failed in {time.time() - add_start:.2f}s")
+
+print(f"\nChecking and fixing order...")
+reorder_start = time.time()
+
+loopless_playlist_updated = edream_client.get_playlist(LOOPLESS_PLAYLIST_UUID)
+
+uuid_to_item_id = {}
+current_uuids_ordered = []
+for item in loopless_playlist_updated['items']:
+    if item['type'] == 'dream' and item['dreamItem']:
+        uuid = item['dreamItem']['uuid']
+        uuid_to_item_id[uuid] = item['id']
+        current_uuids_ordered.append(uuid)
+
+target_uuids_ordered = [uuid for _, uuid in target_dream_uuids_ordered]
+
+needs_reorder = current_uuids_ordered != target_uuids_ordered
+
+if needs_reorder:
+    print(f"Order mismatch detected, reordering items...")
+    reorder_list = []
+    for new_order, uuid in enumerate(target_uuids_ordered):
+        if uuid in uuid_to_item_id:
+            item_id = uuid_to_item_id[uuid]
+            reorder_list.append({"id": item_id, "order": new_order})
     
-    if len(to_add) > 0 or len(to_delete) > 0:
-        print(f"\nReordering items to match source playlist order...")
-        reorder_start = time.time()
-        
-        loopless_playlist_updated = edream_client.get_playlist(LOOPLESS_PLAYLIST_UUID)
-        
-        uuid_to_item_id = {}
-        for item in loopless_playlist_updated['items']:
-            if item['type'] == 'dream' and item['dreamItem']:
-                uuid_to_item_id[item['dreamItem']['uuid']] = item['id']
-        
-        target_uuids_ordered = [uuid for _, uuid in target_dream_uuids_ordered]
-        
-        reorder_list = []
-        for new_order, uuid in enumerate(target_uuids_ordered):
-            if uuid in uuid_to_item_id:
-                item_id = uuid_to_item_id[uuid]
-                reorder_list.append({"id": item_id, "order": new_order})
-        
-        if reorder_list:
-            edream_client.reorder_playlist(
-                uuid=LOOPLESS_PLAYLIST_UUID,
-                order=reorder_list
-            )
-            print(f"Reordered {len(reorder_list)} items in {time.time() - reorder_start:.2f}s")
+    if reorder_list:
+        edream_client.reorder_playlist(
+            uuid=LOOPLESS_PLAYLIST_UUID,
+            order=reorder_list
+        )
+        print(f"Reordered {len(reorder_list)} items in {time.time() - reorder_start:.2f}s")
+else:
+    print(f"Order is already correct, no reordering needed ({time.time() - reorder_start:.3f}s)")
 
 total_time = time.time() - start_time
 print(f"\nComplete! Total time: {total_time:.2f}s")
