@@ -23,7 +23,7 @@ def already_uploaded(filename):
     return False
 
 
-def progress_handler(percentage: float) -> None:
+def progress_handler(bytes_uploaded: int, total_bytes: int, percentage: float) -> None:
     print(f"Upload progress: {percentage:.2f}%")
 
 
