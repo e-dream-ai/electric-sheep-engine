@@ -10,6 +10,7 @@ load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
 API_KEY = os.getenv("API_KEY")
 PLAYLIST_UUID = os.getenv("PLAYLIST_UUID")
+FLOCK_BEGIN_INDEX = int(os.getenv("FLOCK_BEGIN_INDEX", "0"))
 
 parser = argparse.ArgumentParser(prog='keyframe')
 parser.add_argument('--playlist_uuid', default=PLAYLIST_UUID)
@@ -62,6 +63,8 @@ for i in playlist['items']:
         # https://github.com/scottdraves/electricsheep/wiki/Protocol
         parts = d['name'].split('=')
         if len(parts) == 4:
+            if int(parts[1]) < FLOCK_BEGIN_INDEX:
+                continue
             gen = parts[0]
             id = f"{gen}={parts[1]}"
             start_id = f"{gen}={parts[2]}"

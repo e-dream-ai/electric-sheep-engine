@@ -67,6 +67,7 @@ def build_graph(mp4_dir, json_dir):
         sys.exit(1)
 
     edges = []
+    dreams = []
     nodes = set()
     skipped = 0
     no_json = 0
@@ -90,12 +91,13 @@ def build_graph(mp4_dir, json_dir):
 
         gen, dream_id, start_id, end_id = parsed
         edges.append((start_id, end_id, dream_id))
+        dreams.append((uuid, name))
         nodes.add(start_id)
         nodes.add(end_id)
         added += 1
 
     print(f"Added {added} edges, skipped {skipped} (bad format), {no_json} (no JSON)")
-    return nodes, edges
+    return nodes, edges, dreams
 
 
 def write_dot(nodes, edges, dot_path):
@@ -154,14 +156,22 @@ def main():
                         help="Output image file (default: dream_graph.png)")
     parser.add_argument("--dot", default="dream_graph.dot",
                         help="Intermediate DOT file (default: dream_graph.dot)")
+    parser.add_argument("--dreams", default=None,
+                        help="Output text file listing UUID and title per dream")
     args = parser.parse_args()
 
-    nodes, edges = build_graph(args.mp4_dir, args.json_dir)
+    nodes, edges, dreams = build_graph(args.mp4_dir, args.json_dir)
 
     print(f"\nGraph: {len(nodes)} nodes, {len(edges)} edges")
 
     write_dot(nodes, edges, args.dot)
     render_dot(args.dot, args.output)
+
+    if args.dreams:
+        with open(args.dreams, 'w') as f:
+            for uuid, name in dreams:
+                f.write(f"{uuid} {name}\n")
+        print(f"Wrote {len(dreams)} dreams to {args.dreams}")
 
 
 if __name__ == "__main__":
