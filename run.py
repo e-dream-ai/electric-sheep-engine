@@ -7,6 +7,7 @@ load_dotenv()
 BACKEND_URL = os.getenv("BACKEND_URL")
 API_KEY = os.getenv("API_KEY")
 PLAYLIST_UUID = os.getenv("PLAYLIST_UUID")
+FLOCK_BEGIN_INDEX = int(os.getenv("FLOCK_BEGIN_INDEX", "0"))
 
 directory = sys.argv[1]
 
@@ -28,6 +29,12 @@ def progress_handler(bytes_uploaded: int, total_bytes: int, percentage: float) -
 
 
 for filename in os.listdir(directory):
+    name, _ = os.path.splitext(filename)
+    parts = name.split('=')
+    if len(parts) == 4:
+        sheep_id = int(parts[1])
+        if sheep_id < FLOCK_BEGIN_INDEX:
+            continue
     f = os.path.join(directory, filename)
     if not already_uploaded(filename):
         print('upload ' + f)
