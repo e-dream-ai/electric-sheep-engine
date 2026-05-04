@@ -98,16 +98,37 @@ if n_edges > 0:
     print(f'edges recommended for {name}')
     print()
 
+def edge_exists(begin, end):
+    return end in main_succs.get(begin, []) or end in succs.get(begin, [])
+
 if by_weight:
     io_balance.sort(key=compare_by_weight)
-    for i in range(n_edges):
-        print(set_url(True, io_balance[2*i]))
-        print(set_url(False, io_balance[2*i+1]))
+    emitted = 0
+    i = 0
+    while emitted < n_edges and 2*i+1 < len(io_balance):
+        begin_node = io_balance[2*i]
+        end_node = io_balance[2*i+1]
+        i += 1
+        if edge_exists(begin_node, end_node):
+            print(f"# skipping existing edge {begin_node} -> {end_node}")
+            continue
+        print(set_url(True, begin_node))
+        print(set_url(False, end_node))
         print()
+        emitted += 1
 else:
-    for i in range(n_edges):
-        print(set_url(True, io_balance[i]))
-        print(set_url(False, io_balance[-i-1]))
+    emitted = 0
+    i = 0
+    while emitted < n_edges and i < len(io_balance) // 2:
+        begin_node = io_balance[i]
+        end_node = io_balance[-i-1]
+        i += 1
+        if edge_exists(begin_node, end_node):
+            print(f"# skipping existing edge {begin_node} -> {end_node}")
+            continue
+        print(set_url(True, begin_node))
+        print(set_url(False, end_node))
         print()
+        emitted += 1
 
 
