@@ -200,6 +200,7 @@ def main() -> int:
 
     # Pass 3: order. Only refetch if we changed something; in the steady state
     # the copy we already have is current.
+    reordered = False
     changed = bool(to_delete or to_add) and not args.dry_run
     if changed:
         target = client.get_playlist(args.target)
@@ -223,6 +224,7 @@ def main() -> int:
     if actual_order == wanted_uuids:
         say("order already correct")
     elif args.dry_run:
+        reordered = True
         say(f"would reorder {len(wanted_uuids)} items")
     else:
         reorder = [
@@ -233,6 +235,7 @@ def main() -> int:
         if reorder:
             try:
                 client.reorder_playlist(uuid=args.target, order=reorder)
+                reordered = True
                 say(f"reordered {len(reorder)} items")
             except Exception as error:  # noqa: BLE001 - reported, not fatal
                 failures += 1
@@ -244,6 +247,8 @@ def main() -> int:
             f"{verb}: -{len(to_delete)} +{len(to_add)} "
             f"in {time.time() - started:.1f}s"
         )
+    elif reordered:
+        say(f"{verb}: order only in {time.time() - started:.1f}s")
     else:
         say(f"in sync ({time.time() - started:.1f}s)")
 
