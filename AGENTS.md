@@ -13,14 +13,12 @@ Python utility for managing playlists of AI-generated Electric Sheep content. Sy
 ## Project Structure
 
 ```
-sync.py                # Main sync/playlist management
-keyframe.py            # Keyframe generation
+engine.py              # Playlist management: sync, keyframe, wanderlust, singularities, report
+repair_keyframes.py    # One-off repair of keyframes garbled by add_keyframes.py
 keyframe_dash.py       # Keyframe dashboard
 thumbs.py              # Thumbnail generation
 graph.py               # Dream content analysis
-wanderlust.py          # Content exploration
 merge_playlists.py     # Playlist management
-report.py              # Reporting utilities
 copy_mp4_by_*.py       # Content utilities
 extract_uuid_pairs.py  # UUID extraction
 src/edream-sdk/        # SDK submodule
@@ -29,18 +27,26 @@ src/edream-sdk/        # SDK submodule
 ## Commands
 
 ```bash
-pip install -r requirements.txt    # Install dependencies
-python sync.py                     # Run playlist sync
-python keyframe.py                 # Generate keyframes
-python thumbs.py                   # Generate thumbnails
+pip install -r requirements.txt                       # Install dependencies
+python engine.py sync --wanderlust --singularities    # Full pipeline
+python engine.py keyframe --dry-run                   # Link genealogy keyframes
+python engine.py wanderlust                           # Mirror playlist minus loops
+python engine.py singularities                        # Mirror sheep touching singularities
+python engine.py report --edges 5                     # Keyframe graph balance report
+python thumbs.py                                      # Generate thumbnails
 ```
 
 ## Key Patterns
 
 - Uses edream_sdk for backend API interactions
-- Environment variables: BACKEND_URL, API_KEY, PLAYLIST_UUID
-- Supports flock indexing and selective downloads
-- Two-phase operations: download and upload
+- Environment variables: BACKEND_URL, API_KEY, PLAYLIST_UUID, FLOCK_BEGIN_INDEX,
+  LOOPLESS_PLAYLIST_UUID, SINGULARITIES_PLAYLIST_UUID
+- Sheep names are GEN=ID=P1=P2; `Sheep.parse` in engine.py is the one parser
+- `sync` phases: download, upload, wait for ingest, keyframe, then optional
+  wanderlust/singularities; each phase prints a one-line summary and any
+  phase error makes the exit status 1
+- Every writing command supports `--dry-run`; `-v`/`-q` control verbosity
+- Derived playlists go through `mirror()`: delete, batch add, reorder
 
 ## Deployment
 
