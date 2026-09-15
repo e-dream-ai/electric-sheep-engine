@@ -1,2 +1,2 @@
 python-dotenv==1.0.0
--e git+https://github.com/e-dream-ai/python-api.git@main#egg=edream_sdk
+edream_sdk @ git+https://github.com/e-dream-ai/python-api.git@main
