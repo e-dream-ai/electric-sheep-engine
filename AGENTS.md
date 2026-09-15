@@ -21,13 +21,17 @@ graph.py               # Dream content analysis
 merge_playlists.py     # Playlist management
 copy_mp4_by_*.py       # Content utilities
 extract_uuid_pairs.py  # UUID extraction
-src/edream-sdk/        # SDK submodule
 ```
+
+edream_sdk is a pip dependency (python-api `main`), not vendored. Don't commit
+a checkout of it: `src/` is gitignored because `pip install -e git+...` clones
+there, and that clone has been committed by accident four times.
 
 ## Commands
 
 ```bash
-pip install -r requirements.txt                       # Install dependencies
+pip install -U -r requirements.txt                    # Install deps (-U pulls latest SDK main)
+pip install -e ../python-api                          # Or: develop against a local SDK checkout
 python engine.py sync --wanderlust --singularities    # Full pipeline
 python engine.py keyframe --dry-run                   # Link genealogy keyframes
 python engine.py wanderlust                           # Mirror playlist minus loops

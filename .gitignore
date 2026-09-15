@@ -1,0 +1,10 @@
+# pip checks editable git installs out into ./src/<name>; never commit them
+src/
+
+__pycache__/
+.env
+.env.*
+.DS_Store
+*~
+.#*
+\#*#
